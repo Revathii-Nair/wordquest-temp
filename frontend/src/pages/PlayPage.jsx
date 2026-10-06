@@ -25,8 +25,10 @@ export default function PlayPage({ user, setUser, daily = false }) {
   const [message, setMessage] = useState("Drag through adjacent letters to build a word.");
   const [loading, setLoading] = useState(true);
   const [finished, setFinished] = useState(false);
+  const [startedAt, setStartedAt] = useState(null);
 
   const resetState = () => {
+    setGrid([]);
     setSelected([]);
     setNewCells([]);
     setPaused(false);
@@ -35,6 +37,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
     setFound([]);
     setGameId(null);
     setPuzzleId(null);
+    setStartedAt(null);
     setFinished(false);
   };
 
@@ -64,6 +67,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
         setPuzzleId(data.puzzleId || null);
         setScore(data.score);
         setFound(data.found);
+        setStartedAt(Date.now());
         setLoading(false);
 
         if (isDaily) {
@@ -95,7 +99,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
   }, [paused, seconds, loading, finished]);
 
   useEffect(() => {
-    if (seconds !== 0 || gameId === null || loading || finished) return;
+    if (seconds !== 0 || gameId === null || loading || finished || startedAt === null) return;
 
     setFinished(true);
     setPaused(true);
@@ -104,7 +108,18 @@ export default function PlayPage({ user, setUser, daily = false }) {
 
     async function finishGame() {
       try {
-        const res = await api.post("/api/game/finish", { username: user.username, gameId });
+        const duration = Math.floor((Date.now() - startedAt) / 1000);
+
+        const res = await api.post("/api/game/finish", {
+          username: user.username,
+          gameId,
+          mode: isDaily ? "daily" : "free",
+          gridSize,
+          puzzleId,
+          score,
+          found,
+          duration,
+        });
         const data = res.data;
 
         if (!data.accepted) {
@@ -117,6 +132,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
         setScore(savedGame.score);
         setFound(savedGame.words || []);
         setGameId(null);
+        setStartedAt(null);
         setMessage(`Game finished! Score: ${savedGame.score}`);
 
         setUser((value) => ({
@@ -131,7 +147,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
     }
 
     finishGame();
-  }, [seconds, gameId, loading, finished, user.username, setUser]);
+  }, [seconds, gameId, loading, finished, startedAt, user.username, setUser, isDaily, gridSize, puzzleId, score, found]);
 
   const reset = () => {
     resetState();
@@ -182,7 +198,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
 
     async function collect() {
       try {
-        const res = await api.post("/api/game/collect", { username: user.username, gameId, cells: currentSelection });
+        const res = await api.post("/api/game/collect", { username: user.username, gameId, grid, score, found, cells: currentSelection });
         const result = res.data;
 
         if (!result.accepted) {

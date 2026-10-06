@@ -1,7 +1,6 @@
-import time
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .game import GRID_SIZES, collect_word, new_game
+from .game import GRID_SIZES, GameState, collect_word, new_game
 from .data import get_next_game_id,get_daily_puzzle,get_game_history,get_history_with_difficulty,get_leaderboard,get_user,save_game
 
 app = FastAPI()
@@ -16,7 +15,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-active_games = {}
 
 @app.get("/")
 def root():
@@ -57,10 +55,7 @@ def start_game(grid: dict):
         history = get_game_history(username)
         for game in history:
             if (game.get("mode") == "daily"and game.get("puzzleId") == puzzle.get("puzzleId")):
-                return {
-                    "accepted": False,
-                    "alreadyPlayed": True,
-                    "message": "You already played today's daily."}
+                return {"accepted": False,"alreadyPlayed": True,"message": "You already played today's daily."}
 
         grid = puzzle["grid"]
         grid_size = int(puzzle["gridSize"])
@@ -72,15 +67,6 @@ def start_game(grid: dict):
         game = new_game(grid_size)
 
     game_id = get_next_game_id(username)
-
-    active_games[game_id] = {
-        "username": username,
-        "mode": mode,
-        "gridSize": grid_size,
-        "puzzleId": puzzle_id,
-        "game": game,
-        "startedAt": time.time(),
-    }
 
     return {
         "accepted": True,
@@ -95,44 +81,34 @@ def start_game(grid: dict):
 
 @app.post("/api/game/collect")
 def collect(grid: dict):
-    username = grid.get("username")
-    game_id = grid.get("gameId")
     cells = grid.get("cells", [])
-    active_game = active_games.get(game_id)
+    current_grid = grid.get("grid", [])
+    score = grid.get("score", 0)
+    found = grid.get("found", [])
+    game = GameState(grid=current_grid,score=int(score),found=found)
+    return collect_word(game, cells)
 
-    if not active_game:
-        return {"accepted": False, "validation": {"reason": "Game not found."}}
-
-    if active_game["username"] != username:
-        return {"accepted": False, "validation": { "reason": "You cannot access this game."}}
-
-    return collect_word(active_game["game"], cells)
 
 @app.post("/api/game/finish")
 def finish_game(grid: dict):
     username = grid.get("username")
     game_id = grid.get("gameId")
-    active_game = active_games.get(game_id)
-
-    if not active_game:
-        return {"accepted": False, "message": "Game not found."}
-
-    if active_game["username"] != username:
-        return {"accepted": False, "message": "You cannot finish this game."}
-
-    game = active_game["game"]
-    duration = int(time.time() - active_game["startedAt"])
+    mode = grid.get("mode", "free")
+    grid_size = grid.get("gridSize", 5)
+    puzzle_id = grid.get("puzzleId")
+    score = grid.get("score", 0)
+    words = grid.get("found", [])
+    duration = grid.get("duration", 0)
 
     saved_game = save_game(
         username=username,
         game_id=game_id,
-        mode=active_game["mode"],
-        grid_size=active_game["gridSize"],
-        score=game.score,
-        words=game.found,
-        duration=duration,
-        puzzle_id=active_game["puzzleId"],
+        mode=mode,
+        grid_size=grid_size,
+        score=int(score),
+        words=words,
+        duration=int(duration),
+        puzzle_id=puzzle_id,
     )
 
-    del active_games[game_id]
     return {"accepted": True, "game": saved_game}
