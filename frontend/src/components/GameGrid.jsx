@@ -59,7 +59,7 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
   };
 
   return (
-    <div className="mx-auto w-full max-w-[650px] rounded-2xl border border-brand-border bg-background p-1.5 select-none touch-none sm:p-2">
+    <div className="mx-auto w-full max-w-[650px] rounded-2xl border border-brand-border bg-background p-1.5 select-none sm:p-2">
       <div
         ref={boardRef}
         className="grid w-full gap-1 sm:gap-1.5"
@@ -82,7 +82,7 @@ export default function GameGrid({ grid, selected, newCells, disabled, onStart, 
                 data-row={rowIndex}
                 data-col={colIndex}
                 onPointerDown={(event) => handlePointerDown(event, rowIndex, colIndex)}
-                className={`relative m-1 aspect-square min-w-0 overflow-hidden rounded-[5px] border font-black transition text-2xl sm:text-3xl ${
+                className={`relative m-1 aspect-square rounded-[5px] border font-black transition text-2xl sm:text-3xl ${
                   selectedCell
                     ? "border-brand-tertiary bg-brand-tertiary text-background shadow-lg"
                     : "border-brand-border bg-brand-card text-cell-text hover:border-brand-accent"

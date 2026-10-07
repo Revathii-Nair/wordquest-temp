@@ -98,3 +98,7 @@ a {
     opacity: 1;
   }
 }
+
+.animate-fall-in {
+  animation: fallIn 0.5s ease-out;
+}

@@ -8,9 +8,11 @@ import api from "../api.js";
 export const GRID_SIZES = [5, 6, 7, 8, 9];
 export const DEFAULT_GRID_SIZE = 5;
 export const ROUND_SECONDS = 90;
+export const GRID_UNLOCK_SCORE = { 5: 0, 6: 200, 7: 400, 8: 550, 9: 800 };
 
 export default function PlayPage({ user, setUser, daily = false }) {
   const isDaily = daily;
+  const highestScore = user?.best || 0;
   const [gridSize, setGridSize] = useState(DEFAULT_GRID_SIZE);
   const [restartKey, setRestartKey] = useState(0);
   const [grid, setGrid] = useState([]);
@@ -142,7 +144,7 @@ export default function PlayPage({ user, setUser, daily = false }) {
           rounds: (value.rounds || 0) + 1,
         }));
       } catch (err) {
-        setMessage(err.response?.data?.detail || err.message || "Unable to finish game.");
+        setMessage(err.message || "Unable to finish game.");
       }
     }
 
@@ -240,18 +242,27 @@ export default function PlayPage({ user, setUser, daily = false }) {
         <div className="flex flex-wrap items-center justify-end gap-2">
           {!isDaily && (
             <div className="flex items-center gap-1 rounded-xl border border-brand-border bg-brand-card p-1">
-              {GRID_SIZES.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => changeGridSize(size)}
-                  className={`rounded-lg px-2.5 py-1.5 text-xs font-black ${
-                    gridSize === size ? "bg-brand-accent text-background" : "text-brand-muted hover:text-brand-accent"
-                  }`}
-                >
-                  {size}x{size}
-                </button>
-              ))}
+              {GRID_SIZES.map((size) => {
+                const unlocked = highestScore >= GRID_UNLOCK_SCORE[size];
+                return (
+                  <button
+                    key={size}
+                    type="button"
+                    disabled={!unlocked}
+                    title={unlocked ? `Play ${size}x${size}` : `Reach ${GRID_UNLOCK_SCORE[size]} score to unlock`}
+                    onClick={() => changeGridSize(size)}
+                    className={`rounded-lg px-2.5 py-1.5 text-xs font-black ${
+                      gridSize === size
+                        ? "bg-brand-accent text-background"
+                        : unlocked
+                          ? "text-brand-muted hover:text-brand-accent"
+                          : "text-brand-muted opacity-40 cursor-not-allowed"
+                    }`}
+                  >
+                    {size}x{size}
+                  </button>
+                );
+              })}
             </div>
           )}
 

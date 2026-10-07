@@ -89,8 +89,8 @@ def collect_word(state, cells):
             "newCells": [],
         }
 
-    candidate = is_word(raw)
-    if not candidate:
+    word = is_word(raw)
+    if not word:
         return {
             "accepted": False,
             "validation": {"reason": f"{raw} is not a word."},
@@ -100,16 +100,16 @@ def collect_word(state, cells):
             "newCells": [],
         }
 
-    points = len(candidate) * 10
-    collapsed_grid, new_cells = replace_cells(state.grid, cells)
+    points = len(word) * 10
+    new_grid, new_cells = replace_cells(state.grid, cells)
 
-    state.grid = collapsed_grid
+    state.grid = new_grid
     state.score += points
-    state.found.append(candidate)
+    state.found.append(word)
 
     return {
         "accepted": True,
-        "word": candidate,
+        "word": word,
         "points": points,
         "grid": state.grid,
         "score": state.score,

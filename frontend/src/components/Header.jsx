@@ -36,7 +36,7 @@ export default function Header({ user, menuOpen, setMenuOpen, dark, setDark }) {
 
             <button onClick={() => navigate("/")} className="flex items-center gap-2 text-left">
               <span>
-                <span className="block text-base font-black">WORDFALL</span>
+                <span className="block text-base font-black">WORDQUEST</span>
 
                 <span className="block text-[10px] font-semibold uppercase tracking-[.22em] text-brand-muted">{user?.username || "Player"}</span>
               </span>
@@ -65,7 +65,6 @@ export default function Header({ user, menuOpen, setMenuOpen, dark, setDark }) {
                 <NavLink
                   key={to}
                   to={to}
-                  end={to === "/"}
                   onClick={() => setMenuOpen(false)}
                   className={({ isActive }) =>
                     `flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold ${
