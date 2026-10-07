@@ -11,8 +11,8 @@ Amplify.configure({
         oauth: {
           domain: "ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com",
           scopes: ["openid", "email", "phone"],
-          redirectSignIn: ["http://localhost:5173"],
-          redirectSignOut: ["http://localhost:5173"],
+          redirectSignIn: ["https://wordquest-tau.vercel.app"],
+          redirectSignOut: ["https://wordquest-tau.vercel.app"],
           responseType: "code",
         },
       },
