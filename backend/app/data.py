@@ -92,26 +92,32 @@ def save_game(username,game_id, mode, grid_size, score, words, duration,puzzle_i
     update_user_after_game(username,score,word_count)
     return game
 
-def get_game_history(username):
-    response = games_table.query(
-        KeyConditionExpression="username = :username",
-        ExpressionAttributeValues={":username": username}
+def get_game_history(username, limit=None):
+    if limit:
+        response = games_table.query(
+            KeyConditionExpression="username = :username",
+            ExpressionAttributeValues={":username": username},
+            ScanIndexForward=False,
+            Limit=limit
+        )
+    else:
+        response = games_table.query(
+            KeyConditionExpression="username = :username",
+            ExpressionAttributeValues={":username": username}
         )
     
-    games = response.get("Items",[])
-    games.sort(key=lambda game: game.get("date",""), reverse=True)
-
+    games = response.get("Items", [])
+    games.sort(key=lambda game: game.get("date", ""), reverse=True)
     return games
 
 def get_history_with_difficulty(username):
-    history = get_game_history(username)
+    history = get_game_history(username, 10)
     for game in history:
         game["difficulty"] = calculate_difficulty(username,game.get("wordCount", 0))
-
     return history
 
 def calculate_difficulty(username, words):
-    history = get_game_history(username)
+    history = get_game_history(username,10)
     if not history:
         return 50
 
