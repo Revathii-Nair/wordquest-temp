@@ -1,5 +1,6 @@
 from collections import Counter
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 import boto3
 
 AWS_REGION = "ap-south-1"
@@ -152,7 +153,7 @@ def get_leaderboard():
     return leaderboard
 
 def get_daily_puzzle():
-    today = datetime.now(timezone.utc).strftime("%Y%m%d")
+    today = datetime.now(ZoneInfo("Asia/Kolkata")).strftime("%Y%m%d")
     puzzle_id = int(today)
     response = daily_table.get_item(Key={"puzzleId": puzzle_id})
     return response.get("Item")
