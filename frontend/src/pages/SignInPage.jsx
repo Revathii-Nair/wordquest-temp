@@ -3,7 +3,7 @@ import { Eye, EyeOff, LockKeyhole, Mail, LogIn } from "lucide-react";
 import { signIn } from "aws-amplify/auth";
 
 const SIGN_UP_URL =
-  "https://ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com/signup?client_id=388ic5mifocpkc420jtp51e55a&redirect_uri=https%3A%2F%2Fwordquest-tau.vercel.app&response_type=code&scope=email+openid+phone";
+  "https://ap-south-1xunnsjsub.auth.ap-south-1.amazoncognito.com/signup?client_id=388ic5mifocpkc420jtp51e55a&redirect_uri=https%3A%2F%2Fwordquest-tau.vercel.app&response_type=code&scope=email+openid";
 
 export default function SignInPage() {
   const [username, setUsername] = useState("");
